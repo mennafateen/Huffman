@@ -2,6 +2,9 @@
  * Created by menna on 11/2/2016.
  */
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 public class Huffman {
 
@@ -9,8 +12,8 @@ public class Huffman {
         Scanner cin = new Scanner(System.in);
         String original = cin.nextLine();
         Compress(original);
-
-
+        File f = new File("table.txt");
+        deCompress(Compress(original), f);
     }
 
     public static String Compress(String original) {
@@ -32,13 +35,57 @@ public class Huffman {
             result += table.get(original.charAt(i));
         }
         System.out.println(result);
+        File file = new File("table.txt");
+        String write = "";
+        for (Map.Entry<Character, String> entry : table.entrySet()) {
+            Character key = entry.getKey();
+            String value = entry.getValue();
+            write += key;
+            write += "\n";
+            write += value;
+            write += "\n";
+            //System.out.println("key, " + key + " value " + value);
+        }
+        try (PrintWriter out = new PrintWriter("table.txt")) { // make a new compressed file in same working dir
+            out.println(write); // write tags
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return result;
     }
 
-    public static File makeTableFile(HashMap<Character, String> table) {
-        //File file = new File();
 
+    public static String deCompress(String code, File table) {
+        String result = "";
+        HashMap<String, Character> reversedTable = new HashMap<>();
+        try(Scanner cin = new Scanner(table)) {
+            while (cin.hasNext()) {
+                Character ch = cin.nextLine().charAt(0);
+                System.out.println(ch);
+                String bcode = cin.nextLine();
+                System.out.println(bcode);
+                reversedTable.put(bcode, ch);
+            }
+        }
+        catch (FileNotFoundException f) {
+            f.printStackTrace();
+        }
+
+        String temp = "";
+        for (int i = 0; i < code.length(); i++) {
+            temp += code.charAt(i);
+            if (reversedTable.get(temp) != null) {
+                result += reversedTable.get(temp);
+                temp = "";
+            }
+        }
+        System.out.println(result);
+
+        return result;
     }
+
+
 
     public static HashMap<Character, Integer> calculateFrequency(String text) {
         HashMap<Character, Integer> frequency = new HashMap<>();
